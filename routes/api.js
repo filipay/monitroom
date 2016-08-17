@@ -12,6 +12,13 @@ router.get('/cpu', function (req, res, next) {
   res.send(metrics.cpuUsage());
 });
 
+router.get('/speed', function () {
+
+});
+
+router.put('/scan', function (req, res, next) {
+
+});
 // setInterval(listenToNetworkHosts,1000);
 
 module.exports = router;

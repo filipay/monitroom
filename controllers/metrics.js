@@ -5,8 +5,11 @@ var Metrics = function () {
   var _scanner = require('arpscan');
   var _os = require('os');
 
+  self._interval = 5;
+
   self.networkScan = function (callback) {
     return _scanner(function (err, data) {
+      //TODO log as error instead of just throwing it
       if (err) throw err;
       callback(data);
     });
@@ -22,7 +25,15 @@ var Metrics = function () {
     };
   };
 
+  self.setCheckRate = function (minutes) {
+    self._stopNeighbourhoodWatch();
+
+    self._interval = minutes || self._interval;
+    self._startNieghbourhoodWatch(minutes);
+  };
+
   self._startNieghbourhoodWatch = function (minutes) {
+    minutes = minutes || self._interval;
     if (!self._watch) {
       console.log("Starting the watch... (o_o)");
 
@@ -30,6 +41,7 @@ var Metrics = function () {
 
         self.networkScan(function (data) {
           console.log(data);
+          _db.users.updateUsers()
         });
 
         console.log(self.cpuUsage());
@@ -37,14 +49,26 @@ var Metrics = function () {
 
       eyes();
 
-      self._watch = setInterval( eyes, minutes * 60 * 1000);
+      self._watch = setInterval( eyes, self._interval * 60 * 1000);
     } else {
       console.log("Already watching... (0_0)");
     }
   };
 
   self._stopNeighbourhoodWatch = function () {
-    console.log("Stopping the watch... (-.-)zzz");
+    if (self._watch) {
+      console.log("Stopping the watch... (-.-)zzz");
+
+      clearInterval(self._watch);
+      self._watch = undefined;
+      self._interval = 5;
+
+    } else {
+
+      console.log("We never started watching... >.>");
+
+    }
+
   };
 
   self._noticeVisitors = function () {
