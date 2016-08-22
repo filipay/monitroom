@@ -1,20 +1,22 @@
 var Datastore = require('nedb');
+var Device = require('../controllers/device');
+
 var db = {};
-db.users = new Datastore({filename: 'db/users.db', autoload: true});
+db.devices = new Datastore({filename: 'db/devices.db', autoload: true});
 db.stats = new Datastore({filename: 'db/stats.db', autoload: true});
 
 db.stats.ensureIndex({ fieldName: 'mac_addr', unique: true }, function (err) {
 });
-db.users.ensureIndex({ fieldName: 'mac_addr', unique: true }, function (err) {
+db.devices.ensureIndex({ fieldName: 'mac_addr', unique: true }, function (err) {
 });
 
 //Cache latest info
-db.users._cache = undefined;
+db.devices._cache = {};
 
-db.users.fetchUsers = function (callback) {
-  if (db.users._cache) { callback(db.users._cache); }
+db.devices.fetchDevices = function (callback) {
+  if (db.devices._cache) { callback(db.devices._cache); }
   else {
-    db.users.find({}, function (err, docs) {
+    db.devices.find({}, function (err, docs) {
       //TODO log as error instead of just throwing it
       if (err) throw err;
       callback(docs);
@@ -23,20 +25,21 @@ db.users.fetchUsers = function (callback) {
 
 };
 
-db.users.updateUsers = function (users, callback) {
-  var full_users = [];
-  users.forEach(function (user) {
-    full_users.push({
-      mac_addr: user.mac,
-      ip: user.ip,
-      vendor: user.vendor,
-      last_seen: user.timestamp,
-      device_name: ''
+db.devices.updateDevices = function (devices, callback) {
+  devices.forEach(function (device) {
+    //Check if device is already cached, if not create new device
+    var currDevice = db.devices._cache[device.mac] || new Device(device);
+    currDevice.updateTime(device.timestamp);
+    db.devices._cache[device.mac] = currDevice;
+
+    db.devices.update({ mac_addr: device.mac }, currDevice.__self__(), { upsert: true }, function (err) {
+      if (err) throw err;
     });
   });
 
+  console.log(db.devices._cache);
 
-  // db.users.update({} );
+  // db.devices.update({} );
 
 };
 

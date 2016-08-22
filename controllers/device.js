@@ -9,18 +9,19 @@ var Device = function (data) {
   self.device_name = data.device_name || '';
   self.times = {
     start: data.timestamp,
-    last: data.timestamp
+    end: data.timestamp
   };
+  self._ttl = 5 * 60 * 1000;
 
   self.setTTL = function (minutes) {
     self._ttl = minutes * 60 * 1000;
   };
 
   self.updateTime = function (timestamp) {
-    if (timestamp - self.times.last > self._ttl) {
+    if (timestamp - self.times.end > self._ttl) {
       self.times.start = timestamp;
     }
-    self.times.last = timestamp;
+    self.times.end = timestamp;
   };
 
   //Return variables of the objects only
@@ -34,3 +35,5 @@ var Device = function (data) {
     };
   };
 };
+
+module.exports = Device;

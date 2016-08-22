@@ -8,10 +8,11 @@ var Metrics = function () {
   self._interval = 5;
 
   self.networkScan = function (callback) {
-    return _scanner(function (err, data) {
+    _scanner(function (err, data) {
       //TODO log as error instead of just throwing it
       if (err) throw err;
-      callback(data);
+
+      if (callback) callback(data);
     });
   };
 
@@ -40,8 +41,8 @@ var Metrics = function () {
       var eyes = function () {
 
         self.networkScan(function (data) {
+          _db.devices.updateDevices(data);
           console.log(data);
-          _db.users.updateUsers()
         });
 
         console.log(self.cpuUsage());
@@ -74,8 +75,6 @@ var Metrics = function () {
   self._noticeVisitors = function () {
 
   };
-
-  self._startNieghbourhoodWatch(1);
 };
 
 module.exports = new Metrics();
