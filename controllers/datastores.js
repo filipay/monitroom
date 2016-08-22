@@ -14,14 +14,19 @@ db.devices.ensureIndex({ fieldName: 'mac_addr', unique: true }, function (err) {
 db.devices._cache = {};
 
 db.devices.fetchDevices = function (callback) {
-  if (db.devices._cache) { callback(db.devices._cache); }
-  else {
-    db.devices.find({}, function (err, docs) {
-      //TODO log as error instead of just throwing it
-      if (err) throw err;
-      callback(docs);
+
+  db.devices.find({}, function (err, docs) {
+    //TODO log as error instead of just throwing it
+    if (err) throw err;
+
+    docs.forEach(function (doc) {
+      if (!db.devices._cache[doc.mac_addr]) {
+        db.devices._cache[doc.mac_addr] = new Device(doc);
+      }
     });
-  }
+    console.log(db.devices._cache);
+    if (callback) callback(docs);
+  });
 
 };
 

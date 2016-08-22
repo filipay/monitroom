@@ -3,11 +3,11 @@ var Device = function (data) {
 
   var self = this;
 
-  self.mac_addr = data.mac;
+  self.mac_addr = data.mac || data.mac_addr;
   self.ip = data.ip;
   self.vendor = data.vendor;
   self.device_name = data.device_name || '';
-  self.times = {
+  self.times = data.times || {
     start: data.timestamp,
     end: data.timestamp
   };

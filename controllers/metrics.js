@@ -6,6 +6,7 @@ var Metrics = function () {
   var _os = require('os');
 
   self._interval = 5;
+  _db.devices.fetchDevices();
 
   self.networkScan = function (callback) {
     _scanner(function (err, data) {
