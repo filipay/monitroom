@@ -18,6 +18,7 @@ var Device = function (data) {
   };
 
   self.updateTime = function (timestamp) {
+    //Check if the diff in time is bigger than ttl
     if (timestamp - self.times.end > self._ttl) {
       self.times.start = timestamp;
     }

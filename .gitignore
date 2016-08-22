@@ -38,5 +38,4 @@ jspm_packages
 .node_repl_history
 
 # Sensitive data
-db/devices.db
-db/stats.db
+db/*
