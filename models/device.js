@@ -11,6 +11,7 @@ var Device = function (data) {
     start: data.timestamp,
     end: data.timestamp
   };
+  
   self._ttl = 5 * 60 * 1000;
 
   self.setTTL = function (minutes) {

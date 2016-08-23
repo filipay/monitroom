@@ -10,15 +10,16 @@ router.get('/scan', function(req, res, next) {
   });
 });
 
+router.put('/scan', function (req, res) {
+  console.log(req.body());
+  res.send();
+});
+
 router.get('/cpu', function (req, res, next) {
   res.send(metrics.cpuUsage());
 });
 
 router.get('/speed', function () {
-
-});
-
-router.put('/scan', function (req, res, next) {
 
 });
 
