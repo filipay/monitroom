@@ -17,7 +17,7 @@ Small project to monitor who's in the house. Also small metrcis like CPU usage a
 Make sure you have `arp-scan` installed on your machine.
 
 * For Ubuntu: `sudo apt-get install arp-scan`
-* For Mac: `brew install arp-scan`
+* For OS X: `brew install arp-scan` (P.S this requires you to have [Homebrew](http://brew.sh/) installed)
 * AFAIK nothing for Windows compatible with `arpscan` library
 
 Install [Node.js via package manager](https://nodejs.org/en/download/package-manager/) or otherwise.
