@@ -21,7 +21,6 @@ Make sure you have `arp-scan` installed on your machine.
 * AFAIK nothing for Windows compatible with `arpscan` library
 
 Install [Node.js via package manager](https://nodejs.org/en/download/package-manager/) or otherwise.
-
-Get dependencacies via `npm install`.
+Get dependencies by running `npm install` in the cloned folder.
 
 To run `./start.sh`. Make sure you have permissions to run.
