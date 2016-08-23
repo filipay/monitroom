@@ -12,8 +12,7 @@ var Metrics = function () {
     _scanner(function (err, data) {
       //TODO log as error instead of just throwing it
       if (err) throw err;
-
-      if (callback) callback(data);
+      _db.devices.updateDevices(data, callback);
     });
   };
 
@@ -42,7 +41,6 @@ var Metrics = function () {
       var eyes = function () {
 
         self.networkScan(function (data) {
-          _db.devices.updateDevices(data);
           console.log(data);
         });
 
