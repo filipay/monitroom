@@ -6,11 +6,19 @@ var watch = require('../controllers/watch')();
 
 watch.setCheckRate(5);
 
-// metrics.setCheckRate(0.5);
-/* GET users listing. */
-router.get('/scan', function(req, res, next) {
-  metrics.networkScan(function (data) {
-    db.devices.updateDevices(data, callback);
+//GET showing only online devices
+router.get('/scan/live', function(req, res, next) {
+  metrics.networkScan(function (devices) {
+    db.devices.updateDevices(devices);
+    res.send(devices);
+  });
+});
+
+//GET shows all devices, both online
+router.get('/scan/all', function (req, res) {
+
+  //TODO make sure the latest data merges with the old data
+  db.devices.fetchDevices(function (data) {
     res.send(data);
   });
 });
