@@ -32,7 +32,7 @@ var Device = function (data) {
       mac_addr : self.mac_addr,
       ip : self.ip,
       vendor : self.vendor,
-      device_name : self.device_name,
+      name : self.name,
       times : self.times
     };
   };
