@@ -6,23 +6,25 @@ var watch = require('../controllers/watch')();
 var db = require('../storage/datastores');
 var logger = require('../storage/logger');
 
+// watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
+// watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
 
-//GET showing only online devices
-router.get('/scan/live', function(req, res, next) {
-  metrics.networkScan(function (devices) {
-    db.devices.updateAll(devices);
-    logger.info('GET /scan/live', devices.map(function (device) {
+//GET shows all devices, both online
+router.get('/scan/all', function (req, res) {
+
+  //TODO make sure the latest data merges with the old data
+  db.devices.fetchAll(function (devices) {
+    logger.info('GET /scan', devices.map(function (device) {
       return device.mac_addr;
     }));
     res.send(devices);
   });
 });
 
-//GET shows all devices, both online
-router.get('/scan', function (req, res) {
-
-  //TODO make sure the latest data merges with the old data
-  db.devices.fetchAll(function (devices) {
+//GET showing only online devices
+router.get('/scan/live', function(req, res, next) {
+  metrics.networkScan(function (devices) {
+    db.devices.updateAll(devices);
     logger.info('GET /scan/live', devices.map(function (device) {
       return device.mac_addr;
     }));
