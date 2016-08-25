@@ -3,14 +3,14 @@ var router = express.Router();
 
 var metrics = require('../controllers/metrics');
 var watch = require('../controllers/watch')();
-var db = require('../helper/datastores');
-var logger = require('../helper/logger');
+var db = require('../storage/datastores');
+var logger = require('../storage/logger');
 
 
 //GET showing only online devices
 router.get('/scan/live', function(req, res, next) {
   metrics.networkScan(function (devices) {
-    db.devices.updateDevices(devices);
+    db.devices.updateAll(devices);
     logger.info('GET /scan/live', devices.map(function (device) {
       return device.mac_addr;
     }));
@@ -22,21 +22,26 @@ router.get('/scan/live', function(req, res, next) {
 router.get('/scan', function (req, res) {
 
   //TODO make sure the latest data merges with the old data
-  db.devices.fetchDevices(function (devices) {
+  db.devices.fetchAll(function (devices) {
     logger.info('GET /scan/live', devices.map(function (device) {
       return device.mac_addr;
     }));
-    res.send(data);
+    res.send(devices);
   });
 });
 
-router.put('/scan', function (req, res) {
-  db.devices.update('')
-  res.send();
+router.put('/device', function (req, res) {
+  db.devices.updateName(req.body);
+  logger.info('PUT /device', req.body);
+  res.send('OK');
 });
 
 router.get('/cpu', function (req, res, next) {
-  res.send(metrics.cpuUsage());
+  metrics.cpuUsage(function (data) {
+    logger.info('GET /cpu', data);
+    res.send(data);
+  });
+
 });
 
 router.get('/speed', function () {

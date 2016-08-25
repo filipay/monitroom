@@ -1,6 +1,6 @@
 var Datastore = require('nedb');
 var Device = require('../models/device');
-
+var logger = require('../storage/logger.js');
 var DAY = 24 * 60 * 60 * 1000;
 
 var db = {};
@@ -16,7 +16,7 @@ db.devices.ensureIndex({ fieldName: 'mac_addr', unique: true }, function (err) {
 });
 
 
-db.devices.fetchDevices = function (callback) {
+db.devices.fetchAll = function (callback) {
 
   db.devices.find({}, function (err, docs) {
     //TODO log as error instead of just throwing it
@@ -37,9 +37,10 @@ db.devices.updateAll = function (devices, callback) {
   if (callback) callback(devices);
 };
 
-db.devices.updateName = function (device, name) {
-  db.devices.update({mac_addr: device.mac_addr}, { device_name : name }, {}, function (err) {
+db.devices.updateName = function (device) {
+  db.devices.update({mac_addr: device.mac_addr}, { name : device.name }, {}, function (err) {
     if (err) throw err;
   });
 };
+
 module.exports = db;

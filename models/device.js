@@ -6,12 +6,12 @@ var Device = function (data) {
   self.mac_addr = data.mac || data.mac_addr;
   self.ip = data.ip;
   self.vendor = data.vendor;
-  self.device_name = data.device_name || '';
+  self.name = data.name || '';
   self.times = data.times || {
     start: data.timestamp,
     end: data.timestamp
   };
-  
+
   self._ttl = 5 * 60 * 1000;
 
   self.setTTL = function (minutes) {

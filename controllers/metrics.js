@@ -28,7 +28,6 @@ var Metrics = function () {
   self.cpuUsage = function (callback) {
     var load = _os.loadavg();
     var summary = {
-      timestamp: Date.now(),
       _1min: load[0],
       _5min: load[1],
       _15min: load[2]
