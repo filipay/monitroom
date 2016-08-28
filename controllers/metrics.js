@@ -3,6 +3,7 @@ var Metrics = function () {
   var Device = require('../models/device');
   var _scanner = require('arpscan');
   var _os = require('os');
+  var _speedTest = require('speedtest-net')
 
   //Cache mostly exists so we can check has been online for right now
   self._cache = {};
@@ -36,9 +37,17 @@ var Metrics = function () {
     else return summary;
   };
 
-  //TODO
-  self.networkSpeed = function () {
-
+  //TODO more cool stats here like ip, isp, etc to be considered
+  self.networkSpeed = function (callback) {
+    var speedTest = _speedTest({maxTime:5000});
+    speedTest.on('data',function(data) {
+      var summary = {
+        _download: data['speeds']['download'],
+        _upload: data['speeds']['upload']
+      };
+      if (callback) callback(summary);
+      else return summary;
+    });
   };
 };
 
