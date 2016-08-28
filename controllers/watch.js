@@ -12,10 +12,6 @@ var Watch = function (interval) {
     }
   };
 
-  self.DEFAULT_NET_SPEED = {
-
-  };
-
   self.DEFAULT_CPU_UTIL = {
     TYPE: 'CPU_UTIL',
     eyes: function () {
@@ -25,6 +21,14 @@ var Watch = function (interval) {
     }
   };
 
+  self.DEFAULT_NET_SPEED = {
+    TYPE: 'NET_SPEED',
+    eyes: function() {
+      metrics.networkSpeed(function (data) {
+        console.log(data);
+      });
+    }
+  };
 
   self._interval = interval || 5;
 
@@ -43,7 +47,7 @@ var Watch = function (interval) {
       self._watch[watch.TYPE] = setInterval( watch.eyes, minutes * 60 * 1000);
 
     } else {
-      logger.error('Watch already in place', watch.TYPE);
+      logger.error("Watch already in place... ¬.¬", watch.TYPE);
     }
   };
 
