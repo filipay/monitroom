@@ -20,7 +20,11 @@ Make sure you have `arp-scan` installed on your machine.
 * For OS X: `brew install arp-scan` (P.S this requires you to have [Homebrew](http://brew.sh/) installed)
 * AFAIK nothing for Windows compatible with `arpscan` library
 
-Install [Node.js via package manager](https://nodejs.org/en/download/package-manager/) or otherwise.
+
+#### Make sure you install the LATEST version of Node.js (*6.x*) via [package manager](https://nodejs.org/en/download/package-manager/). 
+
+Older versions appear to give unexpected errors due to the arpscan lib. 
+
 Get dependencies by running `npm install` in the cloned folder.
 
 To run `./start.sh`. Make sure you have permissions to run.
