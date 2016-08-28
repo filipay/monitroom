@@ -26,5 +26,6 @@ Make sure you have `arp-scan` installed on your machine.
 Older versions appear to give unexpected errors due to the arpscan lib. 
 
 Get dependencies by running `npm install` in the cloned folder.
-
 To run `./start.sh`. Make sure you have permissions to run.
+
+Currently the development branch is '**testing**'. So be sure `git checkout testing` before starting! 
