@@ -2,12 +2,12 @@
   var app = {
     get : {
       devices: function () {
+        var td = $('.td-template').clone();
+        var tr = $('.tr-template').empty().clone();
+        var index = 0;
+        $('.tbody-template').html('<h3>Loading...<\h3>');
         $.get('http://localhost:3000/api/scan/live', function (results) {
-          var td = $('.td-template').clone();
-          var tr = $('.tr-template').empty().clone();
-          var index = 0;
           $('.tbody-template').empty();
-
           results.forEach(function (device) {
             var device_tr = tr.clone();
 
