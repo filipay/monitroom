@@ -11,11 +11,11 @@ var logger = require('../storage/logger');
 // watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
 
 //GET shows all devices, both online
-router.get('/scan/all', function (req, res) {
+router.get('/devices/all', function (req, res) {
 
   //TODO make sure the latest data merges with the old data
   db.devices.fetchAll(function (devices) {
-    logger.info('GET /scan', devices.map(function (device) {
+    logger.info('GET /devices/all', devices.map(function (device) {
       return device.mac_addr;
     }));
     res.send(devices);
@@ -23,20 +23,21 @@ router.get('/scan/all', function (req, res) {
 });
 
 //GET showing only online devices
-router.get('/scan/live', function(req, res, next) {
+router.get('/devices', function(req, res, next) {
   metrics.networkScan(function (devices) {
     db.devices.updateAll(devices);
-    logger.info('GET /scan/live', devices.map(function (device) {
+    logger.info('GET /devices', devices.map(function (device) {
       return device.mac_addr;
     }));
     res.send(devices);
   });
 });
 
-router.put('/device', function (req, res) {
-  db.devices.updateName(req.body);
-  logger.info('PUT /device', req.body);
-  res.send('OK');
+router.put('/devices/:mac_addr', function (req, res) {
+  res.send();
+  db.devices.updateName(req.params.mac_addr, req.body.name);
+  metrics.updateName(req.params.mac_addr, req.body.name);
+  logger.info('PUT /devices', req.body);
 });
 
 router.get('/cpu', function (req, res, next) {

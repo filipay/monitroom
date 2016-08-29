@@ -37,10 +37,11 @@ db.devices.updateAll = function (devices, callback) {
   if (callback) callback(devices);
 };
 
-db.devices.updateName = function (device) {
-  db.devices.update({mac_addr: device.mac_addr }, {$set : { name : device.name } }, {}, function (err, no, aff) {
+db.devices.updateName = function (mac_addr, name) {
+
+  db.devices.update({ mac_addr : mac_addr }, { $set : { name : name } }, {}, function (err, no, aff) {
     if (err) throw err;
-    logger.debug(aff);
+    logger.debug('Updated # rows: ', no);
   });
 };
 

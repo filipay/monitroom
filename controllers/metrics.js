@@ -8,6 +8,11 @@ var Metrics = function () {
   //Cache mostly exists so we can check has been online for right now
   self._cache = {};
 
+  //TODO screams that cache needs to be redone
+  self.updateName = function (mac, name) {
+    self._cache[mac].name = name;
+  };
+
   self.networkScan = function (callback) {
     _scanner(function (err, data) {
       //TODO log as error instead of just throwing it
