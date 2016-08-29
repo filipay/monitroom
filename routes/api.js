@@ -6,9 +6,9 @@ var watch = require('../controllers/watch')();
 var db = require('../storage/datastores');
 var logger = require('../storage/logger');
 
-watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
-watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
-watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
+// watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
+// watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
+// watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
 
 //GET shows all devices, both online
 router.get('/scan/all', function (req, res) {
