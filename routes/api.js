@@ -34,7 +34,6 @@ router.get('/devices', function(req, res, next) {
 });
 
 router.put('/devices/:mac_addr', function (req, res) {
-  res.send();
   db.devices.updateName(req.params.mac_addr, req.body.name);
   metrics.updateName(req.params.mac_addr, req.body.name);
   logger.info('PUT /devices', req.body);
