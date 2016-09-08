@@ -6,6 +6,7 @@ var app = {
       var index = 0;
       $('.tbody-template').html('<h3>Loading...<\h3>');
       $.get(window.location.origin + '/api/devices', function (results) {
+        console.log(results);
         $('.tbody-template').empty();
         results.forEach(function (device) {
           var device_tr = tr.clone();

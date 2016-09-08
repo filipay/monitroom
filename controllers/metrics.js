@@ -1,30 +1,39 @@
-var Metrics = function () {
+var Metrics = function (app) {
   var self = this;
   var Device = require('../models/device');
   var _scanner = require('arpscan');
   var _os = require('os');
   var _speedTest = require('speedtest-net');
-
+  var logger = require('../storage/logger');
   //Cache mostly exists so we can check has been online for right now
-  self._cache = {};
-
-  //TODO screams that cache needs to be redone
-  self.updateName = function (mac, name) {
-    self._cache[mac].name = name;
-  };
+  self._cache = app.cache;
 
   self.networkScan = function (callback) {
-    _scanner(function (err, data) {
-      //TODO log as error instead of just throwing it
-      if (err) throw err;
 
+    var list = self._cache.getLatest(15 * 1000);
+    // console.log(list);
+    if ( list.length > 0 && self._cache.first_scan ) return callback(list);
+    return _scanner(function (err, data) {
+      self._cache.first_scan = true;
+      //TODO log as error instead of just throwing it
+      if (err) {
+        // logger.err('Scanner err', err);
+        throw err;
+      }
       var devices = [];
       data.forEach(function (device) {
         //Check if device is already cached, if not create new device
-        var currDevice = self._cache[device.mac] || new Device(device);
-        currDevice.updateTime(device.timestamp);
-        self._cache[device.mac] = currDevice;
-        devices.push(currDevice.__self__());
+
+        self._cache.get(device.mac, function (err, details) {
+          var currDevice = details || new Device(device);
+
+          currDevice.updateTime(device.timestamp);
+          self._cache.set(device.mac, currDevice);
+          devices.push(currDevice.__self__());
+        });
+
+
+
       });
 
       if (callback) callback(devices);
@@ -56,4 +65,6 @@ var Metrics = function () {
   };
 };
 
-module.exports = new Metrics();
+module.exports = function (app) {
+  return new Metrics(app);
+};

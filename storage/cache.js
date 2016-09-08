@@ -1,14 +1,19 @@
 var HybridCache = function (app) {
   var self = this;
 
+  if (!app.caster || !app.db) throw new Error('Missing dependancy for Cache');
+  if (!(new app.caster({})).__self__) throw new Error('Caster doesn\'t contain __self__');
+
   var db = app.db;
-  var logger = app.logger || require('winston');
+  var Caster = app.caster;
+
+  var logger = app.logger || require('./logger');
 
   self._expiredCheck = null;
   self._key = '';
 
   self.items = {};
-  
+  self.first_scan = false;
   self.init = function ( key, data ) {
     self._key = key;
     data.forEach(function (item) {
@@ -39,10 +44,26 @@ var HybridCache = function (app) {
   };
 
   self._setId = function ( id, data ) {
+    var data_keys = Object.keys(data);
+
+    //If the object exists, get the keys, otherwise use data_keys, since it will be the same length
+    var item_keys = self.items[id] ? Object.keys(self.items[id].item.__self__()) : data_keys;
+
+    //If the item keys aren't the same length as data keys, data wants to update specific keys
+    //Keep those keys and add exisiting item_keys that are missing from the object
+    if (data_keys.length !== item_keys.length) {
+      var item = self.items[id].item;
+      item_keys.forEach(function( key ) {
+        if (!data[key]) {
+          data[key] = item[key];
+        }
+      });
+    }
     self.items[id] = {
       timestamp: Date.now(),
-      item: data
+      item: new Caster(data)
     };
+
     return self.items[id];
   };
 
@@ -73,14 +94,44 @@ var HybridCache = function (app) {
   self.set = function ( id, data, callback ) {
     var lookup = {};
     lookup[self._key] = id;
-    db.update(lookup, data, { upsert: true }, function( err ) {
-      if (err) logger.err('Error updating item ID: ' + id);
-    });
+
     self._fetchId( id, function(err, hit) {
       hit = self._setId(id, data);
+
+      db.update(lookup, hit.item.__self__(), { upsert: true }, function( err ) {
+        if (err) logger.err('Error updating item ID: ' + id);
+      });
+
       if (callback) return callback( err, hit.item );
     });
   };
+
+
+  self.getLatest = function (age) {
+    var list = [];
+    var timestamp = Date.now();
+
+    Object.keys(self.items).forEach(function (key) {
+      var entry = self.items[key];
+      if ( timestamp - entry.timestamp <= age ) {
+        list.push(entry.item.__self__());
+      }
+    });
+
+    return list;
+  };
+
+  self.getAll = function() {
+    var list = [];
+
+    Object.keys(self.items).forEach(function (key) {
+      list.push(self.items[key].item.__self__());
+    });
+
+    return list;
+  };
 };
 
-module.exports = HybridCache;
+module.exports = function (app) {
+  return new HybridCache(app);
+};

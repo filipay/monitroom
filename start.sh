@@ -1,1 +1,1 @@
-sudo DEBUG=monitroom:* npm start
+DEBUG=monitroom:* npm start

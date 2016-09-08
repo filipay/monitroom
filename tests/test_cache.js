@@ -1,4 +1,4 @@
-var HybridCache = require('../storage/cache.js');
+var HybridCache = require('../storage/cache');
 
 var db = {
   table : {
