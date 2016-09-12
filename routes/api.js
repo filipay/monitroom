@@ -12,9 +12,7 @@ app.caster = device;
 
 var watch = require('../controllers/watch')();
 var cache = require('../storage/cache')(app);
-db.devices.fetchAll(function(devices) {
-  cache.init('mac_addr', devices);
-});
+cache.create('mac_addr');
 var metrics = require('../controllers/metrics')({ cache : cache });
 
 // watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
@@ -25,16 +23,17 @@ var metrics = require('../controllers/metrics')({ cache : cache });
 router.get('/devices/all', function (req, res) {
 
   //TODO make sure the latest data merges with the old data
-  var devices = cache.getAll();
-  logger.info('GET /devices/all', devices.map(function (device) {
-    return device.mac_addr;
-  }));
-  res.send(devices);
+  metrics.networkScan(false, function (devices) {
+    logger.info('GET /devices/all', devices.map(function (device) {
+      return device.mac_addr;
+    }));
+    res.send(devices);
+  });
 });
 
 //GET showing only online devices
 router.get('/devices', function(req, res, next) {
-  metrics.networkScan(function (devices) {
+  metrics.networkScan(true, function (devices) {
     logger.info('GET /devices', devices.map(function (device) {
       return device.mac_addr;
     }));
@@ -44,10 +43,16 @@ router.get('/devices', function(req, res, next) {
 
 router.put('/devices/:mac_addr', function (req, res) {
   var update = { name : req.body.name };
-  cache.set(req.params.mac_addr, update);
-  // console.log(cache.items);
-  logger.info('PUT /devices', { name : req.body.name });
-  res.send('OK');
+  cache.set(req.params.mac_addr, update, function(err) {
+    if (err) {
+      logger.err('Error: PUT /devices', err);
+      res.sendStatus(403);
+    }
+
+    logger.info('PUT /devices', { name : req.body.name });
+    res.sendStatus(200);
+  });
+
 });
 
 router.get('/cpu', function (req, res, next) {
@@ -57,8 +62,8 @@ router.get('/cpu', function (req, res, next) {
   });
 });
 
-router.get('/speed', function () {
-  metrics.networkSpeed(function (data) {
+router.get('/speed', function (req, res) {
+  metrics.networkSpeed(res, function (data) {
     logger.info('GET /netSpeed', data);
     res.send(data);
   });

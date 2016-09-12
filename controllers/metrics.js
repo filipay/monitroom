@@ -8,16 +8,17 @@ var Metrics = function (app) {
   //Cache mostly exists so we can check has been online for right now
   self._cache = app.cache;
 
-  self.networkScan = function (callback) {
-
+  self.networkScan = function (live, callback) {
     var list = self._cache.getLatest(15 * 1000);
-    // console.log(list);
-    if ( list.length > 0 && self._cache.first_scan ) return callback(list);
+
+    if ( list.length > 0 && self._cache.intial_scan) {
+      return callback(list);
+    }
+
     return _scanner(function (err, data) {
-      self._cache.first_scan = true;
-      //TODO log as error instead of just throwing it
+      self._cache.intial_scan = true;
       if (err) {
-        // logger.err('Scanner err', err);
+        logger.err('Scanner err', err);
         throw err;
       }
       var devices = [];
@@ -32,11 +33,14 @@ var Metrics = function (app) {
           devices.push(currDevice.__self__());
         });
 
-
-
       });
-
-      if (callback) callback(devices);
+      if (callback) {
+        if ( live ) {
+          return callback(devices);
+        } else {
+          return callback(self._cache.getAll(devices));
+        }
+      }
     });
   };
 

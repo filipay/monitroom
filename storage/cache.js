@@ -13,12 +13,15 @@ var HybridCache = function (app) {
   self._key = '';
 
   self.items = {};
-  self.first_scan = false;
-  self.init = function ( key, data ) {
+  self.inital_scan = false;
+
+  self.create = function ( key ) {
     self._key = key;
-    data.forEach(function (item) {
-      var id = item[key];
-      self._setId( id, item );
+    return db.fetchAll(function(data){
+      data.forEach(function (item) {
+        var id = item[key];
+        self._setId( id, item );
+      });
     });
   };
 
@@ -121,14 +124,23 @@ var HybridCache = function (app) {
     return list;
   };
 
-  self.getAll = function() {
-    var list = [];
-
-    Object.keys(self.items).forEach(function (key) {
-      list.push(self.items[key].item.__self__());
+  self.getAll = function(latest_data) {
+    var set = {};
+    var list = latest_data || self.getLatest(15 * 1000);
+    list.map(function(data) {
+      set[data[self._key]] = data;
     });
 
-    return list;
+    Object.keys(self.items).forEach(function (key) {
+      if (!set[key]) {
+        set[key] = self.items[key].item.__self__();
+
+      }
+    });
+    var everything = Object.keys(set).map(function(key) {
+      return set[key];
+    });
+    return everything;
   };
 };
 
