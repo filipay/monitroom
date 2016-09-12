@@ -1,7 +1,8 @@
 var HybridCache = function (app) {
   var self = this;
 
-  if (!app.caster || !app.db) throw new Error('Missing dependancy for Cache');
+  if (!app.caster) throw new Error('Missing Caster for Cache');
+  if (!app.db) throw new Error('Missing DB for Cache');
   if (!(new app.caster({})).__self__) throw new Error('Caster doesn\'t contain __self__');
 
   var db = app.db;
@@ -15,7 +16,7 @@ var HybridCache = function (app) {
   self.items = {};
   self.inital_scan = false;
 
-  self.create = function ( key ) {
+  self.create = function ( key, callback ) {
     self._key = key;
     return db.fetchAll(function(data){
       data.forEach(function (item) {
