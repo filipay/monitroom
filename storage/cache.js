@@ -13,11 +13,10 @@ var HybridCache = function (app) {
   self._expiredCheck = null;
   self._key = '';
 
-  self.items = {};
-  self.inital_scan = false;
-
   self.create = function ( key, callback ) {
     self._key = key;
+    self.items = {};
+    self.inital_scan = false;
     return db.fetchAll(function(data){
       data.forEach(function (item) {
         var id = item[key];
@@ -77,7 +76,7 @@ var HybridCache = function (app) {
       var lookup = {};
       lookup[self._key] = id;
       return db.findOne(lookup , function(err, doc) {
-        if (err) logger.err('DB Cache miss for ID: ' + id);
+        if (err) logger.err('DB err: ' + err);
         hit = {};
         if (!doc) hit.err = new Error('Item not found.');
         else hit = self._setId( id, doc);

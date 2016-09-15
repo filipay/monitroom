@@ -1,9 +1,9 @@
 var Metrics = function (app) {
   var self = this;
-  var Device = require('../models/device');
-  var _scanner = require('arpscan');
+  var Device = app.caster || require('../models/device');
+  var _scanner = app.scanner || require('arpscan');
   var _os = require('os');
-  var _speedTest = require('speedtest-net');
+  var _speedTest = app.speedtest || require('speedtest-net');
   var logger = require('../storage/logger');
   //Cache mostly exists so we can check has been online for right now
   self._cache = app.cache;
