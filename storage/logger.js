@@ -4,7 +4,7 @@ var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
       name: 'debug-console',
-      level: 'debug'
+      level: ['debug']
     }),
     new (winston.transports.File)({
       name: 'info-file',
@@ -19,4 +19,4 @@ var logger = new (winston.Logger)({
   ]
 });
 
-module.exports = logger;
+module.exports = { logger: logger, winston: winston };
