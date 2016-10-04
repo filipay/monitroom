@@ -19,4 +19,20 @@ var logger = new (winston.Logger)({
   ]
 });
 
+logger.infoMerge = function (name, data, request) {
+  var result = {};
+  result[name] = data;
+  data.timestamp = Date.now();
+
+  if (request) {
+    result[name].request = {
+      ip : request.ip,
+      method : request.method,
+      protocol : request.protocol,
+      url : request.originalUrl
+    };
+  }
+
+  return result;
+};
 module.exports = { logger: logger, winston: winston };

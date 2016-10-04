@@ -1,13 +1,19 @@
-var Watch = function (interval) {
-  var metrics = require('../controllers/metrics');
+var Watch = function (app, interval) {
+  var metrics = app.metrics;
+  var logger = app.logger;
   var self = this;
   self._watch = {};
 
   self.DEFAULT_NET_SCAN = {
     TYPE: 'NET_SCAN',
     eyes: function() {
-      metrics.networkScan(function (data) {
-        console.log(data);
+      metrics.networkScan(true, function (data) {
+        var macs = data.reduce(function (prev, curr) {
+          prev[curr.mac_addr] = curr;
+          return prev;
+        }, {});
+
+        return logger.info('WATCH /devices', logger.infoMerge('devices', macs));
       });
     }
   };
@@ -16,7 +22,7 @@ var Watch = function (interval) {
     TYPE: 'CPU_UTIL',
     eyes: function () {
       metrics.cpuUsage(function (data) {
-        console.log(data);
+        return logger.info('WATCH /cpu', logger.infoMerge('cpu', data));
       });
     }
   };
@@ -25,7 +31,7 @@ var Watch = function (interval) {
     TYPE: 'NET_SPEED',
     eyes: function() {
       metrics.networkSpeed(function (data) {
-        console.log(data);
+        return logger.info('WATCH /netSpeed', logger.infoMerge('speed', data));
       });
     }
   };
@@ -70,6 +76,6 @@ var Watch = function (interval) {
   };
 };
 
-module.exports = function (interval) {
-  return new Watch(interval);
+module.exports = function (app, interval) {
+  return new Watch(app, interval);
 };

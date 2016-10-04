@@ -14,9 +14,13 @@ var DeviceRow = React.createClass({
     return Math.floor(diff/day) + " days ago";
   },
 
+  handleOnClick: function() {
+    console.log(this.props.device);
+  },
+
   render: function () {
     return (
-    <tr>
+    <tr onClick={this.handleOnClick}>
       <td>{this.props.num}</td>
       <td>{this.props.device.name}</td>
       <td>{this.props.device.ip}</td>
@@ -36,8 +40,7 @@ var DeviceTable = React.createClass({
   },
   componentWillMount: function () {
     $.get(this.props.url, function(data) {
-      this.setState({ data : data });
-      this.setState({ isLoading : false })
+      this.setState({ data : data, isLoading : false });
     }.bind(this));
   },
 

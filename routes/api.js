@@ -12,34 +12,46 @@ app.db = db.devices;
 app.logger = logger;
 app.caster = device;
 
-var watch = require('../controllers/watch')();
 var cache = require('../storage/cache')(app);
 cache.create('mac_addr');
-var metrics = require('../controllers/metrics')({ cache : cache });
+app.cache = cache;
 
-// watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
-// watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
-// watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
+var metrics = require('../controllers/metrics')(app);
+app.metrics = metrics;
+
+var watch = require('../controllers/watch')(app);
+
+watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
+watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
+watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
 
 //GET shows all devices, both online
 router.get('/devices/all', function (req, res) {
-
-  //TODO make sure the latest data merges with the old data
-  metrics.networkScan(false, function (devices) {
-    logger.info('GET /devices/all', devices.map(function (device) {
-      return device.mac_addr;
-    }));
-    res.send(devices);
+  isQuery(req, function( results ){
+    if (results) return res.send(results);
+    //TODO make sure the latest data merges with the old data
+    metrics.networkScan(false, function (devices) {
+      res.send(devices);
+      return logger.info('GET /devices/all', devices.map(function (device) {
+        return device.mac_addr;
+      }));
+    });
   });
 });
 
 //GET showing only online devices
-router.get('/devices', function(req, res, next) {
-  metrics.networkScan(true, function (devices) {
-    logger.info('GET /devices', devices.map(function (device) {
-      return device.mac_addr;
-    }));
-    res.send(devices);
+router.get(['/devices','/devices/live'], function(req, res, next) {
+  isQuery(req, function( results ){
+    if (results) return res.send(results);
+    metrics.networkScan(true, function (devices) {
+      var macs = devices.reduce(function (prev, curr) {
+        prev[curr.mac_addr] = curr;
+        return prev;
+      }, {});
+
+      res.send(devices);
+      return logger.info('GET /devices', logger.infoMerge('devices', macs, req));
+    });
   });
 });
 
@@ -50,44 +62,55 @@ router.put('/devices/:mac_addr', function (req, res) {
   };
   cache.set(req.params.mac_addr, update, function(err) {
     if (err) {
-      logger.err('Error: PUT /devices', err);
       res.sendStatus(403);
+      return logger.err('Error: PUT /devices', err);
     }
 
-    logger.info('PUT /devices', { put_name: update });
     res.sendStatus(200);
+    return logger.info('PUT /devices', logger.infoMerge('put_devices', update, request));
   });
 
 });
 
 router.get('/cpu', function (req, res, next) {
-  console.log(req.query);
-  if (Object.keys(req.query).length > 0) {
-    if (req.query.start_t) {
-      var q = {
-        from: Date.now() - req.query.start_t,
-        until: Date.now(),
-        order: 'desc',
-        fields: ['message']
-      };
-      logger.query(q, function(err, results) {
-        if (err) throw err;
-        res.send(results);
-      });
-    }
-    return;
-  }
-  metrics.cpuUsage(function (data) {
-    logger.info('GET /cpu', {cpu : data});
-    return res.send(data);
+  isQuery(req, function(results) {
+    if (results) return res.send(results);
+    metrics.cpuUsage(function (data) {
+      res.send(data);
+      return logger.info('GET /cpu', logger.infoMerge('cpu', data , req));
+    });
   });
 });
 
 router.get('/speed', function (req, res) {
-  metrics.networkSpeed(res, function (data) {
-    logger.info('GET /netSpeed', data);
-    res.send(data);
+  isQuery(req, function( results ){
+    if (results) return res.send(results);
+    metrics.networkSpeed(res, function (data) {
+      res.send(data);
+      return logger.info('GET /netSpeed', logger.infoMerge('speed', data, req));
+    });
   });
 });
+
+var isQuery = function(req, callback) {
+  if (Object.keys(req.query).length > 0) {
+    if (Array.isArray(req.path)) {
+      var field = req.path[0].substr(1);
+    } else {
+      var field = req.path.substr(1);
+    }
+    req.query.fields = [field];
+    return logger.query(req.query, function(err, data) {
+      if (err) throw err;
+      var results = data['info-file'].filter(function(row) {
+        return row[field];
+      });
+
+      logger.info('QUERY /' + field, logger.infoMerge('query_'+field, req.query, req));
+      return callback(results);
+    });
+  }
+  return undefined;
+}
 
 module.exports = router;
