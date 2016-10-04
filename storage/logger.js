@@ -4,7 +4,7 @@ var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
       name: 'debug-console',
-      level: 'debug'
+      level: ['debug']
     }),
     new (winston.transports.File)({
       name: 'info-file',
@@ -19,4 +19,20 @@ var logger = new (winston.Logger)({
   ]
 });
 
-module.exports = logger;
+logger.infoMerge = function (name, data, request) {
+  var result = {};
+  result[name] = data;
+  data.timestamp = Date.now();
+
+  if (request) {
+    result[name].request = {
+      ip : request.ip,
+      method : request.method,
+      protocol : request.protocol,
+      url : request.originalUrl
+    };
+  }
+
+  return result;
+};
+module.exports = { logger: logger, winston: winston };

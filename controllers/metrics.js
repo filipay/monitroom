@@ -1,33 +1,46 @@
-var Metrics = function () {
+var Metrics = function (app) {
   var self = this;
-  var Device = require('../models/device');
-  var _scanner = require('arpscan');
+  var Device = app.caster || require('../models/device');
+  var _scanner = app.scanner || require('arpscan');
   var _os = require('os');
-  var _speedTest = require('speedtest-net');
-
+  var _speedTest = app.speedtest || require('speedtest-net');
+  var logger = require('../storage/logger');
   //Cache mostly exists so we can check has been online for right now
-  self._cache = {};
+  self._cache = app.cache;
 
-  //TODO screams that cache needs to be redone
-  self.updateName = function (mac, name) {
-    self._cache[mac].name = name;
-  };
+  self.networkScan = function (live, callback) {
+    var list = self._cache.getLatest(15 * 1000);
 
-  self.networkScan = function (callback) {
-    _scanner(function (err, data) {
-      //TODO log as error instead of just throwing it
-      if (err) throw err;
+    if ( list.length > 0 && self._cache.intial_scan) {
+      return callback(list);
+    }
 
+    return _scanner(function (err, data) {
+      self._cache.intial_scan = true;
+      if (err) {
+        logger.err('Scanner err', err);
+        throw err;
+      }
       var devices = [];
       data.forEach(function (device) {
         //Check if device is already cached, if not create new device
-        var currDevice = self._cache[device.mac] || new Device(device);
-        currDevice.updateTime(device.timestamp);
-        self._cache[device.mac] = currDevice;
-        devices.push(currDevice.__self__());
-      });
 
-      if (callback) callback(devices);
+        self._cache.get(device.mac, function (err, details) {
+          var currDevice = details || new Device(device);
+
+          currDevice.updateTime(device.timestamp);
+          self._cache.set(device.mac, currDevice);
+          devices.push(currDevice.__self__());
+        });
+
+      });
+      if (callback) {
+        if ( live ) {
+          return callback(devices);
+        } else {
+          return callback(self._cache.getAll(devices));
+        }
+      }
     });
   };
 
@@ -56,4 +69,6 @@ var Metrics = function () {
   };
 };
 
-module.exports = new Metrics();
+module.exports = function (app) {
+  return new Metrics(app);
+};
