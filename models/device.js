@@ -6,11 +6,12 @@ var Device = function (data) {
   self.mac_addr = data.mac || data.mac_addr;
   self.ip = data.ip;
   self.vendor = data.vendor;
-  self.device_name = data.device_name || '';
-  self.times = data.times || {
+  self.name = data.name || '';
+  self.timestamps = data.timestamps || {
     start: data.timestamp,
     end: data.timestamp
   };
+
   self._ttl = 5 * 60 * 1000;
 
   self.setTTL = function (minutes) {
@@ -19,10 +20,10 @@ var Device = function (data) {
 
   self.updateTime = function (timestamp) {
     //Check if the diff in time is bigger than ttl
-    if (timestamp - self.times.end > self._ttl) {
-      self.times.start = timestamp;
+    if (timestamp - self.timestamps.end > self._ttl) {
+      self.timestamps.start = timestamp;
     }
-    self.times.end = timestamp;
+    self.timestamps.end = timestamp;
   };
 
   //Return variables of the objects only
@@ -31,8 +32,8 @@ var Device = function (data) {
       mac_addr : self.mac_addr,
       ip : self.ip,
       vendor : self.vendor,
-      device_name : self.device_name,
-      times : self.times
+      name : self.name,
+      timestamps : self.timestamps
     };
   };
 };

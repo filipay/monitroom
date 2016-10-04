@@ -1,81 +1,74 @@
-var Metrics = function () {
+var Metrics = function (app) {
   var self = this;
-
-  var _db = require('../controllers/datastores');
-  var _scanner = require('arpscan');
+  var Device = app.caster || require('../models/device');
+  var _scanner = app.scanner || require('arpscan');
   var _os = require('os');
+  var _speedTest = app.speedtest || require('speedtest-net');
+  var logger = require('../storage/logger');
+  //Cache mostly exists so we can check has been online for right now
+  self._cache = app.cache;
 
-  self._interval = 5;
-  _db.devices.fetchDevices();
+  self.networkScan = function (live, callback) {
+    var list = self._cache.getLatest(15 * 1000);
 
-  self.networkScan = function (callback) {
-    _scanner(function (err, data) {
-      //TODO log as error instead of just throwing it
-      if (err) throw err;
+    if ( list.length > 0 && self._cache.intial_scan) {
+      return callback(list);
+    }
 
-      if (callback) callback(data);
+    return _scanner(function (err, data) {
+      self._cache.intial_scan = true;
+      if (err) {
+        logger.err('Scanner err', err);
+        throw err;
+      }
+      var devices = [];
+      data.forEach(function (device) {
+        //Check if device is already cached, if not create new device
+
+        self._cache.get(device.mac, function (err, details) {
+          var currDevice = details || new Device(device);
+
+          currDevice.updateTime(device.timestamp);
+          self._cache.set(device.mac, currDevice);
+          devices.push(currDevice.__self__());
+        });
+
+      });
+      if (callback) {
+        if ( live ) {
+          return callback(devices);
+        } else {
+          return callback(self._cache.getAll(devices));
+        }
+      }
     });
   };
 
-  self.cpuUsage = function () {
+  self.cpuUsage = function (callback) {
     var load = _os.loadavg();
-    return {
-      timestamp: Date.now(),
+    var summary = {
       _1min: load[0],
       _5min: load[1],
       _15min: load[2]
     };
+    if (callback) callback(summary);
+    else return summary;
   };
 
-  self.setCheckRate = function (minutes) {
-    self._stopNeighbourhoodWatch();
-
-    self._interval = minutes || self._interval;
-    self._startNieghbourhoodWatch(minutes);
-  };
-
-  self._startNieghbourhoodWatch = function (minutes) {
-    minutes = minutes || self._interval;
-    if (!self._watch) {
-      console.log("Starting the watch... (o_o)");
-
-      var eyes = function () {
-
-        self.networkScan(function (data) {
-          _db.devices.updateDevices(data);
-          console.log(data);
-        });
-
-        console.log(self.cpuUsage());
+  //TODO more cool stats here like ip, isp, etc to be considered
+  self.networkSpeed = function (callback) {
+    var speedTest = _speedTest({maxTime:5000});
+    speedTest.on('data',function(data) {
+      var summary = {
+        download: data.speeds.download,
+        upload: data.speeds.download
       };
-
-      eyes();
-
-      self._watch = setInterval( eyes, self._interval * 60 * 1000);
-    } else {
-      console.log("Already watching... (0_0)");
-    }
-  };
-
-  self._stopNeighbourhoodWatch = function () {
-    if (self._watch) {
-      console.log("Stopping the watch... (-.-)zzz");
-
-      clearInterval(self._watch);
-      self._watch = undefined;
-      self._interval = 5;
-
-    } else {
-
-      console.log("We never started watching... >.>");
-
-    }
-
-  };
-
-  self._noticeVisitors = function () {
-
+      if (callback) callback(summary);
+      else return summary;
+    });
   };
 };
 
-module.exports = new Metrics();
+module.exports = function (app) {
+  return new Metrics(app);
+};
