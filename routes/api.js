@@ -29,7 +29,7 @@ watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
 router.get('/devices/all', function (req, res) {
   isQuery(req, function( results ){
     if (results) return res.send(results);
-    //TODO make sure the latest data merges with the old data
+    
     metrics.networkScan(false, function (devices) {
       res.send(devices);
       return logger.info('GET /devices/all', devices.map(function (device) {
@@ -94,10 +94,11 @@ router.get('/speed', function (req, res) {
 
 var isQuery = function(req, callback) {
   if (Object.keys(req.query).length > 0) {
+    var field = '';
     if (Array.isArray(req.path)) {
-      var field = req.path[0].substr(1);
+      field = req.path[0].substr(1);
     } else {
-      var field = req.path.substr(1);
+      field = req.path.substr(1);
     }
     req.query.fields = [field];
     return logger.query(req.query, function(err, data) {
@@ -110,7 +111,7 @@ var isQuery = function(req, callback) {
       return callback(results);
     });
   }
-  return undefined;
-}
+  return callback(undefined);
+};
 
 module.exports = router;

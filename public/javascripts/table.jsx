@@ -26,7 +26,7 @@ var DeviceRow = React.createClass({
       <td>{this.props.device.ip}</td>
       <td>{this.props.device.mac_addr}</td>
       <td>{this.props.device.vendor}</td>
-      <td>{this.lastSeen(this.props.device.times.end)}</td>
+      <td>{this.lastSeen(this.props.device.timestamps.end)}</td>
     </tr>)
   },
 });
@@ -40,7 +40,7 @@ var DeviceTable = React.createClass({
   },
   componentWillMount: function () {
     $.get(this.props.url, function(data) {
-      this.setState({ data : data, isLoading : false });
+      this.setState({ data : data , isLoading : false });
     }.bind(this));
   },
 
