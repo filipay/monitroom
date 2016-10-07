@@ -19,8 +19,6 @@
     <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
     <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
     <script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.js"></script>
-    <script src="https://npmcdn.com/rd3/build/public/js/react-d3.min.js"></script>
   </head>
 
   <body>
@@ -60,8 +58,13 @@
             <li><a href="#">Network Speed</a></li>
           </ul>
         </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="overview-content">
-        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Dashboard</h1>
+
+          <h2 class="sub-header">Devices</h2>
+          <div class="table-responsive" id="device-table">
+
+          </div>
         </div>
       </div>
     </div>
@@ -71,6 +74,6 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script type="text/babel" src="javascripts/app.jsx"></script>
+    <script type="text/babel" src="javascripts/table.jsx"></script>
   </body>
 </html>
