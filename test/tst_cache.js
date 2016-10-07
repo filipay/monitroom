@@ -1,24 +1,6 @@
 var expect = require('chai').expect;
-
-var mock_db = {
-  table : {
-    '00:00:x0:00:00' : {
-      mac_addr: '00:00:x0:00:00',
-      name: 'Mock'
-    }
-  },
-  fetchAll: function(callback) {
-    return callback(Object.keys(mock_db.table).map(function(key) {
-      return mock_db.table[key];
-    }));
-  },
-  findOne: function (item, callback) {
-    callback(null, mock_db.table[item.mac_addr]);
-  },
-  update: function (item, update, callback) {
-    mock_db.table[item.mac_addr] = update;
-  }
-};
+var fakes = require('./fakes');
+var db = fakes.db;
 
 var HybridCache = require('../storage/cache'),
     Caster = require('../models/device'),
@@ -26,7 +8,7 @@ var HybridCache = require('../storage/cache'),
 
 describe('HybridCache', function() {
   before(function() {
-    cache = HybridCache({ db: mock_db, caster: Caster});
+    cache = HybridCache({ db: db, caster: Caster});
   });
 
   describe('#create', function() {
