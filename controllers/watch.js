@@ -30,7 +30,7 @@ var Watch = function (app, interval) {
   self.DEFAULT_NET_SPEED = {
     TYPE: 'NET_SPEED',
     eyes: function() {
-      metrics.networkSpeed(function (data) {
+      metrics.networkSpeed(2000, function (data) {
         return logger.info('WATCH /netSpeed', logger.infoMerge('speed', data));
       });
     }

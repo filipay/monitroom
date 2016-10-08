@@ -29,12 +29,12 @@ watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
 router.get('/devices/all', function (req, res) {
   isQuery(req, function( results ){
     if (results) return res.send(results);
-    
+
     metrics.networkScan(false, function (devices) {
-      res.send(devices);
-      return logger.info('GET /devices/all', devices.map(function (device) {
-        return device.mac_addr;
-      }));
+      return res.send(devices);
+      // return logger.info('GET /devices/all', devices.map(function (device) {
+      //   return device.mac_addr;
+      // }));
     });
   });
 });
@@ -85,7 +85,7 @@ router.get('/cpu', function (req, res, next) {
 router.get('/speed', function (req, res) {
   isQuery(req, function( results ){
     if (results) return res.send(results);
-    metrics.networkSpeed(res, function (data) {
+    metrics.networkSpeed(2000,function (data) {
       res.send(data);
       return logger.info('GET /netSpeed', logger.infoMerge('speed', data, req));
     });
@@ -94,24 +94,51 @@ router.get('/speed', function (req, res) {
 
 var isQuery = function(req, callback) {
   if (Object.keys(req.query).length > 0) {
-    var field = '';
+    var path = '';
     if (Array.isArray(req.path)) {
-      field = req.path[0].substr(1);
+      path = req.path[0].substr(1);
     } else {
-      field = req.path.substr(1);
+      path = req.path.substr(1);
     }
-    req.query.fields = [field];
+    req.query.fields = ['name','data'];
     return logger.query(req.query, function(err, data) {
       if (err) throw err;
-      var results = data['info-file'].filter(function(row) {
-        return row[field];
+      var filtered = data['info-file'].filter(function(row) {
+        if (row) { return row.name === path; }
+        return false;
       });
-
-      logger.info('QUERY /' + field, logger.infoMerge('query_'+field, req.query, req));
-      return callback(results);
+      // var filled = filtered;
+      var filled = filtered.fillBlanks(0, 2 * 60 * 1000);
+      logger.info('QUERY /' + path, logger.infoMerge('query_'+path, req.query, req));
+      return callback(filled);
     });
   }
   return callback(undefined);
 };
+
+Array.prototype.fillBlanks = function(index, increment) {
+    if (this.length === 0 || index === this.length - 1) return this;
+    var curr = this[index],
+        next = this[index+1];
+
+    var is_ascending = curr.data.timestamp < next.data.timestamp;
+
+    var interval = Math.abs(curr.data.timestamp - next.data.timestamp);
+    if (interval > increment) {
+      var stump = JSON.parse(JSON.stringify(curr));
+      Object.keys(stump.data).forEach(function(key){
+        if (key === 'timestamp') {
+          stump.data.timestamp = is_ascending ?
+          curr.data.timestamp + increment:
+          curr.data.timestamp - increment;
+        }
+        else stump.data[key] = 0;
+      });
+      this.splice(index + 1, 0, stump);
+    }
+    return this.fillBlanks(index + 1, increment);
+};
+
+
 
 module.exports = router;

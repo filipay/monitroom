@@ -97,15 +97,13 @@ var Chart = React.createClass({
   },
   componentWillMount: function () {
     $.get(this.constructUrl(), function(results) {
-
-
       this.setState({ data : this.props.converter(results) });
     }.bind(this));
   },
   render: function() {
    return  (
-     <div id="cpu-graph">
-       <h2 className="sub-header">CPU </h2>
+     <div>
+       <h2 className="sub-header">{this.props.name}</h2>
        <LineChart
            legend={true}
            data={this.state.data}
@@ -117,9 +115,8 @@ var Chart = React.createClass({
              width: 800,
              height: 400
            }}
-           yAxisLabel="CPU"
+           yAxisLabel={this.props.name}
            xAxisLabel="Date"
-           domain={{y: [0,4]}}
            gridHorizontal={true}
        />
     </div>
@@ -132,14 +129,19 @@ var App = React.createClass({
   render: function() {
     return (
       <div>
-      <h1 className="page-header">Dashboard</h1>
-      <DeviceTable name="Devices" url="/api/devices/all"/>
-      <Chart url="/api/cpu" query={{
+        <h1 className="page-header">Dashboard</h1>
+        <DeviceTable name="Devices" url="/api/devices/live"/>
+        <Chart url="/api/cpu" name="CPU" query={{
+            from: 5,
+            limit: 10000
+          }} converter={cpu_convert}
+        />
+        <Chart name="Network Speed" url="/api/speed" query={{
           from: 5,
           limit: 10000
-        }} converter={converter}
-      />
-    </div>
+        }} converter={speed_convert}
+        />
+      </div>
     )
   }
 });
@@ -149,24 +151,24 @@ ReactDOM.render(
   document.getElementById('overview-content')
 )
 
-function converter(data) {
+function cpu_convert(response) {
   var results = [];
   var series_1min = {
     name: '1 Minute Metric',
-    values : data.map(function(d) {
-      return { y: d.cpu._1min, x : new Date(d.cpu.timestamp) };
+    values : response.map(function(d) {
+      return { x : new Date(d.data.timestamp), y: d.data._1min };
     })
   };
   var series_5min = {
     name: '5 Minute Metric',
-    values : data.map(function(d) {
-      return { y: d.cpu._1min, x : new Date(d.cpu.timestamp) };
+    values : response.map(function(d) {
+      return {  x : new Date(d.data.timestamp), y: d.data._5min};
     })
   };
   var series_15min = {
     name: '15 Minute Metric',
-    values : data.map(function(d) {
-      return { y: d.cpu._15min, x : new Date(d.cpu.timestamp) };
+    values : response.map(function(d) {
+      return { x : new Date(d.data.timestamp), y: d.data._15min };
     })
   };
   results.push(series_1min);
@@ -174,3 +176,22 @@ function converter(data) {
   results.push(series_15min);
   return results;
 };
+
+function speed_convert (response) {
+  var results = [];
+  var series_dl = {
+    name: 'Download',
+    values: response.map(function(d){
+      return { x: new Date(d.data.timestamp), y: d.data.download}
+    })
+  };
+  var series_ul = {
+    name: 'Upload',
+    values: response.map(function(d){
+      return { x: new Date(d.data.timestamp), y: d.data.upload}
+    })
+  };
+  results.push(series_dl);
+  results.push(series_ul);
+  return results;
+}

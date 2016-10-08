@@ -4,7 +4,7 @@ var Metrics = function (app) {
   var _scanner = app.scanner || require('arpscan');
   var _os = require('os');
   var _speedTest = app.speedtest || require('speedtest-net');
-  var logger = require('../storage/logger');
+  var logger = app.logger;
   //Cache mostly exists so we can check has been online for right now
   self._cache = app.cache;
 
@@ -15,11 +15,11 @@ var Metrics = function (app) {
       return callback(list);
     }
 
-    return _scanner(function (err, data) {
+    _scanner(function (err, data) {
       self._cache.intial_scan = true;
       if (err) {
-        logger.err('Scanner err', err);
-        throw err;
+        logger.error('Scanner err', err);
+        return callback([]);
       }
       var devices = [];
       data.forEach(function (device) {
@@ -56,13 +56,21 @@ var Metrics = function (app) {
   };
 
   //TODO more cool stats here like ip, isp, etc to be considered
-  self.networkSpeed = function (callback) {
-    var speedTest = _speedTest({maxTime:5000});
+  self.networkSpeed = function (maxTime, callback) {
+    var summary = { download: 0, upload: 0 };
+
+    var speedTest = _speedTest({maxTime: maxTime});
+    speedTest.on('error', function(error) {
+      logger.error('ERROR /speed', error);
+      if (callback) callback(summary);
+      else return summary;
+    });
+
     speedTest.on('data',function(data) {
-      var summary = {
-        download: data.speeds.download,
-        upload: data.speeds.download
-      };
+      if (data.speeds.download === 'Nan') data.speeds.download = 0;
+      if (data.speeds.upload === 'Nan') data.speeds.upload = 0;
+      summary.download = data.speeds.download;
+      summary.upload = data.speeds.upload;
       if (callback) callback(summary);
       else return summary;
     });
