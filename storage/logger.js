@@ -21,11 +21,13 @@ var logger = new (winston.Logger)({
 
 logger.infoMerge = function (name, data, request) {
   var result = {};
-  result[name] = data;
+
+  result.name = name;
+  result.data = data;
   data.timestamp = Date.now();
 
   if (request) {
-    result[name].request = {
+    result.request = {
       ip : request.ip,
       method : request.method,
       protocol : request.protocol,
