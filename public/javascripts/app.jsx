@@ -116,6 +116,7 @@ var Chart = React.createClass({
              height: 400
            }}
            yAxisLabel={this.props.name}
+           domain={{y: [0,]}}
            xAxisLabel="Date"
            gridHorizontal={true}
        />
@@ -131,12 +132,17 @@ var App = React.createClass({
       <div>
         <h1 className="page-header">Dashboard</h1>
         <DeviceTable name="Devices" url="/api/devices/live"/>
+        <Chart url="/api/devices" name="# of Devices" query={{
+            from: 5,
+            limit: 10000
+          }} converter={sum_devices}
+        />
         <Chart url="/api/cpu" name="CPU" query={{
             from: 5,
             limit: 10000
           }} converter={cpu_convert}
         />
-        <Chart name="Network Speed" url="/api/speed" query={{
+        <Chart name="Speed" url="/api/speed" query={{
           from: 5,
           limit: 10000
         }} converter={speed_convert}
@@ -193,5 +199,17 @@ function speed_convert (response) {
   };
   results.push(series_dl);
   results.push(series_ul);
+  return results;
+}
+
+function sum_devices (response) {
+  var results = [];
+  var series_sum_devices = {
+    name: '# of devices',
+    values: response.map(function(d){
+      return { x: new Date(d.data.timestamp), y: d.data.devices.length || 0 }
+    })
+  };
+  results.push(series_sum_devices);
   return results;
 }

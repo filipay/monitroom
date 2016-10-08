@@ -11,7 +11,7 @@ var Metrics = function (app) {
   self.networkScan = function (live, callback) {
     var list = self._cache.getLatest(15 * 1000);
 
-    if ( list.length > 0 && self._cache.intial_scan) {
+    if ( !live && list.length > 0 && self._cache.intial_scan) {
       return callback(list);
     }
 

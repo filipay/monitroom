@@ -8,12 +8,7 @@ var Watch = function (app, interval) {
     TYPE: 'NET_SCAN',
     eyes: function() {
       metrics.networkScan(true, function (data) {
-        var macs = data.reduce(function (prev, curr) {
-          prev[curr.mac_addr] = curr;
-          return prev;
-        }, {});
-
-        return logger.info('WATCH /devices', logger.infoMerge('devices', macs));
+        return logger.info('WATCH /devices', logger.infoMerge('devices', {devices : data}));
       });
     }
   };
@@ -30,7 +25,7 @@ var Watch = function (app, interval) {
   self.DEFAULT_NET_SPEED = {
     TYPE: 'NET_SPEED',
     eyes: function() {
-      metrics.networkSpeed(2000, function (data) {
+      metrics.networkSpeed(app.CONFIG.speedTest.maxTime * 60 * 1000, function (data) {
         return logger.info('WATCH /netSpeed', logger.infoMerge('speed', data));
       });
     }

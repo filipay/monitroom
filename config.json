@@ -1,0 +1,10 @@
+{
+  "intervals" : {
+    "net_scan" : 1,
+    "net_speed" : 1,
+    "cpu_util" : 1
+  },
+  "speedTest" : {
+    "maxTime": 0.5
+  }
+}

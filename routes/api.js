@@ -1,13 +1,17 @@
 var express = require('express');
 var router = express.Router();
+var fs = require('fs');
+var CONFIG = JSON.parse(fs.readFileSync('config.json','utf8'));
 
 var app = {};
+
 var db = require('../storage/datastores');
 var log = require('../storage/logger');
 var winston = log.winston;
 var logger = log.logger;
 var device = require('../models/device');
 
+app.CONFIG = CONFIG;
 app.db = db.devices;
 app.logger = logger;
 app.caster = device;
@@ -21,9 +25,9 @@ app.metrics = metrics;
 
 var watch = require('../controllers/watch')(app);
 
-watch.startWatching(watch.DEFAULT_NET_SCAN, 0.5);
-watch.startWatching(watch.DEFAULT_CPU_UTIL, 1);
-watch.startWatching(watch.DEFAULT_NET_SPEED, 0.5);
+watch.startWatching(watch.DEFAULT_NET_SCAN, CONFIG.intervals.net_scan);
+watch.startWatching(watch.DEFAULT_CPU_UTIL, CONFIG.intervals.cpu_util);
+watch.startWatching(watch.DEFAULT_NET_SPEED, CONFIG.intervals.net_speed);
 
 //GET shows all devices, both online
 router.get('/devices/all', function (req, res) {
@@ -44,13 +48,8 @@ router.get(['/devices','/devices/live'], function(req, res, next) {
   isQuery(req, function( results ){
     if (results) return res.send(results);
     metrics.networkScan(true, function (devices) {
-      var macs = devices.reduce(function (prev, curr) {
-        prev[curr.mac_addr] = curr;
-        return prev;
-      }, {});
-
       res.send(devices);
-      return logger.info('GET /devices', logger.infoMerge('devices', macs, req));
+      return logger.info('GET /devices', logger.infoMerge('devices', {devices : devices}, req));
     });
   });
 });
@@ -108,7 +107,7 @@ var isQuery = function(req, callback) {
         return false;
       });
       // var filled = filtered;
-      var filled = filtered.fillBlanks(0, 2 * 60 * 1000);
+      var filled = filtered.fillBlanks(0, 1.2 * 60 * 1000);
       logger.info('QUERY /' + path, logger.infoMerge('query_'+path, req.query, req));
       return callback(filled);
     });
