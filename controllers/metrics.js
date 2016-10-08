@@ -41,7 +41,7 @@ var Metrics = function (app) {
           return callback(self._cache.getAll(devices));
         }
       }
-    });
+    }, { sudo: true });
   };
 
   self.cpuUsage = function (callback) {
