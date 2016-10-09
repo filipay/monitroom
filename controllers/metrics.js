@@ -72,7 +72,7 @@ var Metrics = function (app) {
         logger.error('ERROR: download is not a number', data.speeds);
         data.speeds.download = 0;
       }
-      if (typeof data.speeds.upload === 'number') {
+      if (typeof data.speeds.upload !== 'number') {
         logger.error('ERROR: upload is not a number', data.speeds);
         data.speeds.upload = 0;
       }
