@@ -5,6 +5,9 @@
     "cpu_util" : 1
   },
   "speedTest" : {
-    "maxTime": 0.5
+    "maxTime" : 0.5
+  },
+  "cache" : {
+    "time" : 4
   }
 }

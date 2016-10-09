@@ -5,11 +5,12 @@ var Metrics = function (app) {
   var _os = require('os');
   var _speedTest = app.speedtest || require('speedtest-net');
   var logger = app.logger;
+  var CONFIG = app.CONFIG;
   //Cache mostly exists so we can check has been online for right now
   self._cache = app.cache;
 
   self.networkScan = function (live, callback) {
-    var list = self._cache.getLatest(15 * 1000);
+    var list = self._cache.getLatest(CONFIG.cache.time);
 
     if ( !live && list.length > 0 && self._cache.intial_scan) {
       return callback(list);
@@ -67,8 +68,14 @@ var Metrics = function (app) {
     });
 
     speedTest.on('data',function(data) {
-      if (typeof data.speeds.download !== 'number') data.speeds.download = 0;
-      if (typeof data.speeds.upload === 'number') data.speeds.upload = 0;
+      if (typeof data.speeds.download !== 'number') {
+        logger.error('ERROR: download is not a number', data.speeds);
+        data.speeds.download = 0;
+      }
+      if (typeof data.speeds.upload === 'number') {
+        logger.error('ERROR: upload is not a number', data.speeds);
+        data.speeds.upload = 0;
+      }
       summary.download = data.speeds.download;
       summary.upload = data.speeds.upload;
       if (callback) callback(summary);

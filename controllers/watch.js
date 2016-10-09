@@ -42,6 +42,7 @@ var Watch = function (app, interval) {
 
   self.startWatching = function (watch, minutes) {
     minutes = minutes || self._interval;
+    if (minutes <= 0) return;
     if (!self._watch[watch.TYPE]) {
 
       watch.eyes();
@@ -63,10 +64,6 @@ var Watch = function (app, interval) {
     } else {
       logger.error("We never started watching... >.>", watch.TYPE);
     }
-
-  };
-
-  self._noticeVisitors = function () {
 
   };
 };

@@ -5,9 +5,9 @@ var HybridCache = function (app) {
   if (!app.db) throw new Error('Missing DB for Cache');
   if (!(new app.caster({})).__self__) throw new Error('Caster doesn\'t contain __self__');
 
+  var CONFIG = app.CONFIG;
   var db = app.db;
   var Caster = app.caster;
-
   var logger = app.logger || require('./logger');
 
   self._expiredCheck = null;
@@ -126,7 +126,7 @@ var HybridCache = function (app) {
 
   self.getAll = function(latest_data) {
     var set = {};
-    var list = latest_data || self.getLatest(15 * 1000);
+    var list = latest_data || self.getLatest(CONFIG.cache.time * 60 * 1000);
     list.map(function(data) {
       set[data[self._key]] = data;
     });
