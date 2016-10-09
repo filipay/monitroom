@@ -67,8 +67,8 @@ var Metrics = function (app) {
     });
 
     speedTest.on('data',function(data) {
-      if (data.speeds.download === 'Nan') data.speeds.download = 0;
-      if (data.speeds.upload === 'Nan') data.speeds.upload = 0;
+      if (typeof data.speeds.download !== 'number') data.speeds.download = 0;
+      if (typeof data.speeds.upload === 'number') data.speeds.upload = 0;
       summary.download = data.speeds.download;
       summary.upload = data.speeds.upload;
       if (callback) callback(summary);
