@@ -10,6 +10,11 @@ var log = require('../storage/logger');
 var winston = log.winston;
 var logger = log.logger;
 var device = require('../models/device');
+var configMap = {
+  cpu : CONFIG.intervals.cpu_util * 1.1,
+  speed : CONFIG.intervals.net_speed * 1.1,
+  devices : CONFIG.intervals.net_scan * 1.1
+};
 
 app.CONFIG = CONFIG;
 app.db = db.devices;
@@ -86,7 +91,7 @@ router.get('/speed', function (req, res) {
     if (results) return res.send(results);
     metrics.networkSpeed(2000,function (data) {
       res.send(data);
-      return logger.info('GET /netSpeed', logger.infoMerge('speed', data, req));
+      return logger.info('GET /speed', logger.infoMerge('speed', data, req));
     });
   });
 });
@@ -99,6 +104,7 @@ var isQuery = function(req, callback) {
     } else {
       path = req.path.substr(1);
     }
+    if (configMap[path] <= 0) return callback([]);
     req.query.fields = ['name','data'];
     return logger.query(req.query, function(err, data) {
       if (err) throw err;
@@ -107,7 +113,7 @@ var isQuery = function(req, callback) {
         return false;
       });
       // var filled = filtered;
-      var filled = filtered.fillBlanks(0, 1.2 * 60 * 1000);
+      var filled = filtered.fillBlanks(0, configMap[path] * 60 * 1000);
       logger.info('QUERY /' + path, logger.infoMerge('query_'+path, req.query, req));
       return callback(filled);
     });
@@ -119,10 +125,10 @@ Array.prototype.fillBlanks = function(index, increment) {
     if (this.length === 0 || index === this.length - 1) return this;
     var curr = this[index],
         next = this[index+1];
-
     var is_ascending = curr.data.timestamp < next.data.timestamp;
-
+    increment = Math.abs(increment);
     var interval = Math.abs(curr.data.timestamp - next.data.timestamp);
+
     if (interval > increment) {
       var stump = JSON.parse(JSON.stringify(curr));
       Object.keys(stump.data).forEach(function(key){

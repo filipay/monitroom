@@ -139,12 +139,12 @@ var App = React.createClass({
         />
         <Chart url="/api/cpu" name="CPU" query={{
             from: 5,
-            limit: 10000
+            limit: 1000
           }} converter={cpu_convert}
         />
         <Chart name="Speed" url="/api/speed" query={{
           from: 5,
-          limit: 10000
+          limit: 1000
         }} converter={speed_convert}
         />
       </div>
