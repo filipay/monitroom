@@ -1,6 +1,7 @@
 # monitroom
 [![Build Status](https://travis-ci.org/filipay/monitroom.svg?branch=master)](https://travis-ci.org/filipay/monitroom)
 [![Coverage Status](https://coveralls.io/repos/github/filipay/monitroom/badge.svg?branch=master)](https://coveralls.io/github/filipay/monitroom?branch=master)
+
 ##Info
 
 This is a [Node.js](https://nodejs.org/) project.
